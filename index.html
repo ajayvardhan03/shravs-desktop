@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'unsafe-inline'" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 340px;
+      height: 260px;
+      background: transparent;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      user-select: none;
+    }
+
+    #container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: flex-end;
+      padding: 0 20px 20px 20px;
+      pointer-events: none;
+    }
+
+    /* Speech bubble */
+    #speech-bubble {
+      max-width: 260px;
+      background: rgba(24, 24, 27, 0.95);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px 18px 4px 18px;
+      padding: 10px 14px;
+      margin-bottom: 10px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #d4d4d8;
+      backdrop-filter: blur(20px);
+      opacity: 0;
+      transform: translateY(6px) scale(0.96);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      pointer-events: none;
+    }
+
+    #speech-bubble.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Bubble row */
+    #bubble-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      pointer-events: all;
+    }
+
+    #close {
+      background: rgba(39,39,42,0.8);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      color: #71717a;
+      font-size: 9px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s;
+      flex-shrink: 0;
+    }
+    #close:hover { color: #fff; }
+
+    /* Main orb */
+    #orb {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #2d2d2d, #0d0d0d);
+      border: 1.5px solid rgba(255,255,255,0.1);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 2px;
+      position: relative;
+      animation: float 3.5s ease-in-out infinite;
+      transition: box-shadow 0.3s ease, border-color 0.3s ease;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 0 rgba(255,255,255,0);
+      -webkit-app-region: drag;
+    }
+
+    #orb .label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: 0.05em;
+      -webkit-app-region: no-drag;
+    }
+
+    #orb .hint {
+      font-size: 7.5px;
+      color: #52525b;
+      letter-spacing: 0.02em;
+      -webkit-app-region: no-drag;
+    }
+
+    /* State-based glow */
+    #orb.idle {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      border-color: rgba(255,255,255,0.1);
+    }
+    #orb.recording {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 3px rgba(239,68,68,0.4), 0 0 24px rgba(239,68,68,0.3);
+      border-color: rgba(239,68,68,0.6);
+      animation: float 3.5s ease-in-out infinite, pulse-red 1s ease-in-out infinite;
+    }
+    #orb.thinking {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 3px rgba(245,158,11,0.35), 0 0 24px rgba(245,158,11,0.25);
+      border-color: rgba(245,158,11,0.5);
+      animation: float 3.5s ease-in-out infinite, pulse-amber 0.8s ease-in-out infinite;
+    }
+    #orb.speaking {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 3px rgba(34,197,94,0.35), 0 0 24px rgba(34,197,94,0.25);
+      border-color: rgba(34,197,94,0.5);
+      animation: float 3.5s ease-in-out infinite, pulse-green 0.6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-6px); }
+    }
+    @keyframes pulse-red {
+      0%, 100% { box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 3px rgba(239,68,68,0.4), 0 0 24px rgba(239,68,68,0.3); }
+      50%       { box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 6px rgba(239,68,68,0.2), 0 0 36px rgba(239,68,68,0.4); }
+    }
+    @keyframes pulse-amber {
+      0%, 100% { box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 3px rgba(245,158,11,0.35), 0 0 24px rgba(245,158,11,0.25); }
+      50%       { box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 6px rgba(245,158,11,0.2), 0 0 36px rgba(245,158,11,0.35); }
+    }
+    @keyframes pulse-green {
+      0%, 100% { box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 3px rgba(34,197,94,0.35), 0 0 24px rgba(34,197,94,0.25); }
+      50%       { box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 6px rgba(34,197,94,0.2), 0 0 36px rgba(34,197,94,0.35); }
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <div id="speech-bubble"></div>
+    <div id="bubble-row">
+      <button id="close">✕</button>
+      <div id="orb" class="idle">
+        <span class="label">Shravs</span>
+        <span class="hint" id="hint">hold space</span>
+      </div>
+    </div>
+  </div>
+  <script src="renderer.js"></script>
+</body>
+</html>

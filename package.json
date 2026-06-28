@@ -1,0 +1,17 @@
+{
+  "name": "shravs-desktop",
+  "version": "1.0.0",
+  "description": "Shravs desktop companion",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "dotenv": "^17.4.2",
+    "electron": "^42.5.0"
+  }
+}
